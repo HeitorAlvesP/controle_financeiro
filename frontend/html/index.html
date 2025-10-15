@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro - Login/Registro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7fafc; }
+        .card { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Formulário de Registro -->
+        <div class="card bg-white p-8 rounded-xl border border-gray-200">
+            <h2 class="text-3xl font-bold mb-6 text-indigo-600">Criar Nova Conta</h2>
+            <form id="registerForm" class="space-y-4">
+                <div>
+                    <label for="reg-nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                    <input type="text" id="reg-nome" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="reg-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="reg-email" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="reg-senha" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <input type="password" id="reg-senha" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="reg-data-nasc" class="block text-sm font-medium text-gray-700">Data de Nascimento (Opcional)</label>
+                    <input type="date" id="reg-data-nasc" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    Registrar
+                </button>
+            </form>
+            <p id="registerMessage" class="mt-4 text-center text-sm"></p>
+        </div>
+
+        <!-- Formulário de Login -->
+        <div class="card bg-white p-8 rounded-xl border border-gray-200">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Acessar</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="log-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="log-email" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="log-senha" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <input type="password" id="log-senha" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    Entrar
+                </button>
+            </form>
+            <p id="loginMessage" class="mt-4 text-center text-sm"></p>
+            
+            <hr class="my-6">
+
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">Usuários Registrados (Para Teste)</h3>
+            <button id="loadUsersBtn" class="w-full py-1 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out">
+                Carregar Usuários
+            </button>
+            <div id="usersList" class="mt-4 max-h-40 overflow-y-auto space-y-2 text-sm">
+                <!-- Usuários serão listados aqui -->
+            </div>
+        </div>
+    </div>
+    <script type="module" src="../javascript/login.js"></script>
+</body>
+</html>
