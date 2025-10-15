@@ -1,6 +1,5 @@
 import { getDb } from '../database/db.js';
 
-// Função para registrar um novo usuário
 export const registerUser = async (req, res) => {
     const { nome, email, senha, dt_nascimento } = req.body;
 
@@ -11,7 +10,7 @@ export const registerUser = async (req, res) => {
     const user = { 
         nome, 
         email, 
-        senha, // ATENÇÃO: Salvando como string simples, conforme sua solicitação.
+        senha,
         dt_nascimento: dt_nascimento || null,
         ultimo_login: null
     };
@@ -41,7 +40,6 @@ export const registerUser = async (req, res) => {
     }
 };
 
-// Função para autenticar o login do usuário
 export const loginUser = async (req, res) => {
     const { email, senha } = req.body;
 
@@ -51,25 +49,21 @@ export const loginUser = async (req, res) => {
 
     try {
         const db = await getDb();
-        // Busca o usuário. Não traz a senha na seleção final para evitar exposição desnecessária no código.
         const user = await db.get('SELECT id, nome, email, senha FROM users WHERE email = ?', [email]);
 
         if (!user) {
             return res.status(401).json({ message: 'Credenciais inválidas. Usuário não encontrado.' });
         }
 
-        // Comparação de senha simples, conforme solicitado.
         if (user.senha !== senha) {
             return res.status(401).json({ message: 'Credenciais inválidas. Senha incorreta.' });
         }
 
-        // Atualiza a data do último login
         const now = new Date().toISOString();
         await db.run('UPDATE users SET ultimo_login = ? WHERE id = ?', [now, user.id]);
 
         console.log(`Usuário ${user.id} (${user.email}) logado com sucesso.`);
 
-        // Retorna informações básicas do usuário (SEM a senha)
         return res.status(200).json({
             message: 'Login realizado com sucesso!',
             user: {
@@ -86,7 +80,6 @@ export const loginUser = async (req, res) => {
     }
 };
 
-// Função auxiliar para listar todos os usuários (útil para teste e desenvolvimento)
 export const getAllUsers = async (req, res) => {
     try {
         const db = await getDb();

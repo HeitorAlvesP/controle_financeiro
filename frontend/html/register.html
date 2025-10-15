@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro - Cadastro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
+        .card { box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 10px -2px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md">
+        <div class="card bg-white p-8 rounded-xl border border-gray-200">
+            <h1 class="text-4xl font-extrabold mb-2 text-gray-800 text-center">💸 Controle Financeiro</h1>
+            <h2 class="text-2xl font-bold mb-6 text-green-600 text-center">Criar Nova Conta</h2>
+            
+            <form id="registerForm" class="space-y-4">
+                <div>
+                    <label for="reg-nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                    <input type="text" id="reg-nome" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <label for="reg-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="reg-email" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <label for="reg-senha" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <input type="password" id="reg-senha" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <label for="reg-data-nasc" class="block text-sm font-medium text-gray-700">Data de Nascimento (Opcional)</label>
+                    <input type="date" id="reg-data-nasc" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
+                </div>
+                <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    Registrar
+                </button>
+            </form>
+            <p id="registerMessage" class="mt-6 text-center text-sm"></p>
+
+            <div class="mt-6 pt-4 border-t border-gray-100">
+                <p class="text-center text-sm text-gray-600">
+                    Já tem uma conta? 
+                    <a href="login.html" class="font-medium text-indigo-600 hover:text-indigo-500 transition duration-150 ease-in-out">
+                        Fazer login.
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="../javascript/register.js"></script>
+</body>
+</html>

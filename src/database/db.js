@@ -3,7 +3,6 @@ import { open } from 'sqlite';
 
 const DB_PATH = './src/database/financeiro.db';
 
-// Função para inicializar o banco de dados
 export async function initializeDatabase() {
   try {
     const db = await open({
@@ -13,7 +12,6 @@ export async function initializeDatabase() {
 
     console.log('✅ Banco de dados conectado com sucesso!');
 
-    // Cria a tabela de usuários conforme a estrutura solicitada
     await db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +34,6 @@ export async function initializeDatabase() {
 
 let dbInstance;
 
-// Função para obter a instância do banco de dados (singleton)
 export async function getDb() {
   if (!dbInstance) {
     dbInstance = await initializeDatabase();
