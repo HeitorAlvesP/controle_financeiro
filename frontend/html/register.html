@@ -3,53 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle Financeiro - Cadastro</title>
+    <title>Registro - Controle Financeiro</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
-        .card { box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 10px -2px rgba(0, 0, 0, 0.05); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Cinza claro de fundo */
+        }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-md">
-        <div class="card bg-white p-8 rounded-xl border border-gray-200">
-            <h1 class="text-4xl font-extrabold mb-2 text-gray-800 text-center">💸 Controle Financeiro</h1>
-            <h2 class="text-2xl font-bold mb-6 text-green-600 text-center">Criar Nova Conta</h2>
-            
-            <form id="registerForm" class="space-y-4">
+    <!-- Card Principal de Registro -->
+    <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-2xl transition duration-300 hover:shadow-3xl">
+        <h1 class="text-3xl font-bold text-center text-green-700 mb-6">Criar Conta</h1>
+        
+        <!-- Mensagem de Status -->
+        <p id="message-area" class="mt-4 text-center text-sm font-semibold"></p>
+
+        <!-- PASSO 1: Formulário de Cadastro Inicial -->
+        <div id="step-1">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Informações Pessoais</h2>
+            <form id="register-form" class="space-y-4">
+                
                 <div>
-                    <label for="reg-nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
-                    <input type="text" id="reg-nome" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
+                    <label for="nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                    <input type="text" id="nome" name="nome" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 transition duration-150">
                 </div>
+                
                 <div>
-                    <label for="reg-email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="reg-email" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" name="email" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 transition duration-150">
                 </div>
+
                 <div>
-                    <label for="reg-senha" class="block text-sm font-medium text-gray-700">Senha</label>
-                    <input type="password" id="reg-senha" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
+                    <label for="dt_nascimento" class="block text-sm font-medium text-gray-700">Data de Nascimento (Opcional)</label>
+                    <input type="date" id="dt_nascimento" name="dt_nascimento" 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 transition duration-150">
                 </div>
+                
                 <div>
-                    <label for="reg-data-nasc" class="block text-sm font-medium text-gray-700">Data de Nascimento (Opcional)</label>
-                    <input type="date" id="reg-data-nasc" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
+                    <label for="senha" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <input type="password" id="senha" name="senha" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 transition duration-150">
                 </div>
-                <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
-                    Registrar
+                
+                <div>
+                    <label for="confirmar_senha" class="block text-sm font-medium text-gray-700">Confirmar Senha</label>
+                    <input type="password" id="confirmar_senha" name="confirmar_senha" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 transition duration-150">
+                </div>
+                
+                <button type="submit" 
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200">
+                    Enviar Código de Verificação
                 </button>
             </form>
-            <p id="registerMessage" class="mt-6 text-center text-sm"></p>
+            <div class="mt-4 text-center">
+                <a href="/html/login.html" class="text-sm text-green-600 hover:text-green-800 font-medium">Já tem conta? Faça login</a>
+            </div>
+        </div>
 
-            <div class="mt-6 pt-4 border-t border-gray-100">
-                <p class="text-center text-sm text-gray-600">
-                    Já tem uma conta? 
-                    <a href="login.html" class="font-medium text-indigo-600 hover:text-indigo-500 transition duration-150 ease-in-out">
-                        Fazer login.
-                    </a>
-                </p>
+        <!-- PASSO 2: Verificação de Código (Inicialmente oculta) -->
+        <div id="step-2" class="hidden">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Verificação de E-mail</h2>
+            <p class="text-sm text-gray-600 mb-4 text-center">
+                Um código de 6 dígitos foi enviado para o email: <span id="email_step2" class="font-bold text-green-700"></span>
+            </p>
+            <form id="verify-form" class="space-y-4">
+                <div>
+                    <label for="verification_code" class="block text-sm font-medium text-gray-700">Código de Verificação</label>
+                    <input type="text" id="verification_code" name="verification_code" required maxlength="6"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-center text-lg focus:outline-none focus:ring-green-500 focus:border-green-500 transition duration-150">
+                </div>
+                
+                <button type="submit" 
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                    Verificar e Finalizar Cadastro
+                </button>
+            </form>
+            <div class="mt-4 text-center">
+                <button onclick="document.getElementById('step-2').classList.add('hidden'); document.getElementById('step-1').classList.remove('hidden');" 
+                        class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                    Voltar e Corrigir Email
+                </button>
             </div>
         </div>
     </div>
+
+    <!-- Modal de Erro (Inicialmente oculta) -->
+    <div id="error-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-red-600">Atenção!</h3>
+                <button id="modal-close-button" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="modal-message" class="text-gray-700"></div>
+            <div class="mt-4 flex justify-end">
+                <button id="modal-close-button-footer" onclick="document.getElementById('error-modal').classList.add('hidden');"
+                        class="py-2 px-4 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-200">
+                    Entendi
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="../javascript/register.js"></script>
 </body>
 </html>
