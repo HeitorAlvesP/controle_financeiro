@@ -8,35 +8,64 @@ const EXPIRATION_TIME_MS = 15 * 60 * 1000; // 15 minutos
 // Função auxiliar para gerar um código de 6 dígitos
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+/**
+ * Valida o formato básico do CPF (11 dígitos numéricos).
+ * NOTE: Esta é apenas uma validação de formato e não de dígito verificador.
+ * @param {string} cpf - O CPF a ser validado.
+ * @returns {boolean}
+ */
+const validateCPF = (cpf) => {
+    if (!cpf) return false;
+    // Remove caracteres não numéricos e verifica se tem 11 dígitos
+    const cleanCpf = cpf.replace(/\D/g, '');
+    return cleanCpf.length === 11;
+};
+
+
 // ----------------------------------------------------------------------
 // PASSO 1: Envia o Código de Verificação
 // Rota: POST /users/send-code
 // ----------------------------------------------------------------------
 export const sendVerificationCodeController = async (req, res) => {
-    const { nome, email, senha, dt_nascimento } = req.body;
+    // Adicionado 'cpf' à desestruturação
+    const { nome, email, senha, dt_nascimento, cpf } = req.body;
 
-    if (!nome || !email || !senha) {
-        return res.status(400).json({ message: 'Nome, Email e Senha são obrigatórios.' });
+    if (!nome || !email || !senha || !cpf) {
+        return res.status(400).json({ message: 'Nome, Email, Senha e CPF são obrigatórios.' });
+    }
+
+    if (!validateCPF(cpf)) {
+        return res.status(400).json({ message: 'O formato do CPF é inválido. Utilize apenas 11 dígitos numéricos.' });
     }
 
     try {
         const db = await getDb();
-        const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+        // 1. Verifica se o email OU o CPF já existem no banco
+        const existingUser = await db.get('SELECT email, cpf FROM users WHERE email = ? OR cpf = ?', [email, cpf]);
 
         if (existingUser) {
-            return res.status(409).json({ message: 'Este email já está cadastrado.' });
+            // Verifica qual campo causou a falha de unicidade para retornar uma mensagem específica
+            if (existingUser.email === email) {
+                return res.status(409).json({ message: 'Este email já está cadastrado.' });
+            }
+            if (existingUser.cpf === cpf) {
+                // CORREÇÃO: Esta verificação é crucial para evitar o erro SQLITE_CONSTRAINT
+                return res.status(409).json({ message: 'Este CPF já está cadastrado.' });
+            }
+            return res.status(409).json({ message: 'Usuário já cadastrado com este e-mail ou CPF.' });
         }
 
+        // 2. Gera e armazena o código de verificação
         const code = generateCode();
         const expiration = Date.now() + EXPIRATION_TIME_MS;
 
+        // Armazena todos os dados, incluindo o CPF
         pendingRegistrations[email] = {
-            user: { nome, email, senha, dt_nascimento: dt_nascimento || null },
+            user: { nome, email, senha, dt_nascimento: dt_nascimento || null, cpf },
             code: code,
             expiration: expiration
         };
         
-        // TENTA ENVIAR O E-MAIL REAL
         const emailSent = await sendVerificationCode(email, code);
 
         if (!emailSent) {
@@ -81,11 +110,26 @@ export const verifyAndRegisterUser = async (req, res) => {
     // Persiste o usuário no banco
     const user = pending.user;
 
+    // Valores padrão para as novas colunas
+    const tipoUser = 2; // Padrão
+    const status = 1;   // Padrão
+
     try {
         const db = await getDb();
+        // CORREÇÃO: INSERÇÃO COMPLETA com cpf, tipo_user e status
         const result = await db.run(
-            'INSERT INTO users (nome, email, senha, dt_nascimento, ultimo_login) VALUES (?, ?, ?, ?, ?)',
-            [user.nome, user.email, user.senha, user.dt_nascimento, null]
+            `INSERT INTO users (nome, email, senha, dt_nascimento, cpf, tipo_user, status, ultimo_login) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                user.nome, 
+                user.email, 
+                user.senha, 
+                user.dt_nascimento, 
+                user.cpf, // Novo campo
+                tipoUser, // Novo campo (padrão 2)
+                status,   // Novo campo (padrão 1)
+                null
+            ]
         );
 
         delete pendingRegistrations[email];
@@ -101,6 +145,7 @@ export const verifyAndRegisterUser = async (req, res) => {
 
     } catch (error) {
         console.error('Erro ao finalizar o registro:', error);
+        // Em um cenário de erro inesperado, ainda é bom informar o usuário
         return res.status(500).json({ message: 'Erro interno do servidor ao finalizar registro.' });
     }
 };
@@ -116,7 +161,8 @@ export const loginUser = async (req, res) => {
 
     try {
         const db = await getDb();
-        const user = await db.get('SELECT id, nome, email, senha FROM users WHERE email = ?', [email]);
+        // Incluindo CPF, tipo_user, status na seleção (para futuros usos)
+        const user = await db.get('SELECT id, nome, email, senha, cpf, tipo_user, status FROM users WHERE email = ?', [email]);
 
         if (!user || user.senha !== senha) {
             return res.status(401).json({ message: 'Credenciais inválidas.' });
@@ -127,7 +173,15 @@ export const loginUser = async (req, res) => {
 
         return res.status(200).json({
             message: 'Login realizado com sucesso!',
-            user: { id: user.id, nome: user.nome, email: user.email, ultimo_login: now }
+            user: { 
+                id: user.id, 
+                nome: user.nome, 
+                email: user.email, 
+                cpf: user.cpf,
+                tipo_user: user.tipo_user,
+                status: user.status,
+                ultimo_login: now 
+            }
         });
 
     } catch (error) {
@@ -139,7 +193,7 @@ export const loginUser = async (req, res) => {
 export const getAllUsers = async (req, res) => {
     try {
         const db = await getDb();
-        const users = await db.all('SELECT id, nome, email, dt_nascimento, ultimo_login FROM users');
+        const users = await db.all('SELECT id, nome, email, dt_nascimento, ultimo_login, cpf, tipo_user, status FROM users');
         return res.status(200).json(users);
     } catch (error) {
         console.error('Erro ao buscar usuários:', error);

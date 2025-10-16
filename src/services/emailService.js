@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
 
-// IMPORTANTE: Em um projeto real, esses valores viriam de variáveis de ambiente (.env)
 const REMETENTE_EMAIL = 'heitorpinto.oficial@gmail.com'; 
 const SENHA_APLICATIVO = 'bnlvruvxhserutrt'; 
 
@@ -12,12 +11,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-/**
- * Envia o código de verificação para o e-mail do usuário.
- * @param {string} destinatarioEmail - O e-mail do usuário a ser verificado.
- * @param {string} codigo - O código de verificação gerado.
- * @returns {Promise<boolean>} - True se o envio foi bem-sucedido, False caso contrário.
- */
 export async function sendVerificationCode(destinatarioEmail, codigo) {
     const corpoEmailHtml = `
         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 10px; max-width: 600px; margin: auto;">
