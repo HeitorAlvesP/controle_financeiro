@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inputs
     const nomeInput = document.getElementById('nome');
     const emailInput = document.getElementById('email');
-    const cpfInput = document.getElementById('cpf');
+    const cpfInput = document.getElementById('cpf'); // Input CPF
     const dateInput = document.getElementById('dt_nascimento');
     const passwordInput = document.getElementById('senha');
     const confirmPasswordInput = document.getElementById('confirmar_senha');
@@ -32,6 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("ERRO CRÍTICO NO DOM: Um ou mais elementos principais do formulário não foram encontrados.");
         return; 
     }
+    if (!cpfInput) {
+        console.error("ERRO CRÍTICO NO DOM: Input CPF não encontrado. Verifique se o ID é 'cpf'.");
+        return;
+    }
+
 
     // Adiciona listener nos botões de fechar modal
     if (modalCloseButton) modalCloseButton.addEventListener('click', () => modal.classList.add('hidden'));
@@ -58,12 +63,34 @@ document.addEventListener('DOMContentLoaded', () => {
         return errors;
     };
     
+    // Validação de formato (limpa a máscara e verifica se tem 11 dígitos)
     const validateCpfFormat = (cpf) => {
-        // Remove caracteres não numéricos e verifica se tem 11 dígitos
         const cleanCpf = cpf.replace(/\D/g, '');
         return cleanCpf.length === 11;
     };
 
+    // Função de máscara de CPF (adiciona pontuações em tempo real)
+    const maskCpf = (value) => {
+        // 1. Limpa o valor, mantendo apenas dígitos
+        let cleanValue = value.replace(/\D/g, '');
+        
+        // 2. Limita a 11 dígitos para a formatação
+        if (cleanValue.length > 11) {
+            cleanValue = cleanValue.substring(0, 11);
+        }
+
+        // 3. Aplica a máscara: XXX.XXX.XXX-XX
+        cleanValue = cleanValue.replace(/(\d{3})(\d)/, '$1.$2');
+        cleanValue = cleanValue.replace(/(\d{3})(\d)/, '$1.$2');
+        cleanValue = cleanValue.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        
+        return cleanValue;
+    };
+
+    // Event listener para aplicar a máscara no input do CPF
+    cpfInput.addEventListener('input', (e) => {
+        e.target.value = maskCpf(e.target.value);
+    });
 
     const postData = async (path, data) => {
         try {
@@ -114,14 +141,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const nome = nomeInput.value;
         const email = emailInput.value;
-        const cpf = cpfInput.value;
+        const cpfComMascara = cpfInput.value;
         const dt_nascimento = dateInput.value;
         const senha = passwordInput.value;
         const confirmar_senha = confirmPasswordInput.value;
 
+        // Limpa o CPF para o backend (apenas números)
+        const cpf = cpfComMascara.replace(/\D/g, ''); 
+
         let validationErrors = validatePassword(senha, confirmar_senha);
 
-        // Validação de CPF no Frontend (Formato básico)
+        // Validação de CPF no Frontend (Formato básico sem máscara)
         if (!validateCpfFormat(cpf)) {
              validationErrors.push('<li>O CPF deve conter exatamente 11 dígitos numéricos.</li>');
         }
