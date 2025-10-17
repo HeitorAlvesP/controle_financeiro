@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Por enquanto, apenas loga o sucesso
                     console.log('Dados do Usuário:', json.user);
                     // Exemplo de redirecionamento:
-                    // window.location.href = '/dashboard.html'; 
+                    window.location.href = '/html/dashboard.html'; 
                 });
             } else {
                 // Erro de credenciais (401 Unauthorized) ou outro erro de API
