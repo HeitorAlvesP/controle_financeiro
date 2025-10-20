@@ -113,15 +113,19 @@
                                     <label for="currentPassword" class="block text-sm font-medium text-gray-700">Senha Atual</label>
                                     <input type="password" id="currentPassword" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                                 </div>
-                                <div>
-                                    <label for="newPassword" class="block text-sm font-medium text-gray-700">Nova Senha</label>
-                                    <input type="password" id="newPassword" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                
+                                <div id="new-password-fields">
+                                    <div>
+                                        <label for="newPassword" class="block text-sm font-medium text-gray-700">Nova Senha</label>
+                                        <input type="password" id="newPassword" disabled required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:text-gray-500">
+                                    </div>
+                                    <div>
+                                        <label for="confirmNewPassword" class="block text-sm font-medium text-gray-700">Confirmar Nova Senha</label>
+                                        <input type="password" id="confirmNewPassword" disabled required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:text-gray-500">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label for="confirmNewPassword" class="block text-sm font-medium text-gray-700">Confirmar Nova Senha</label>
-                                    <input type="password" id="confirmNewPassword" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                                </div>
-                                <button type="submit" class="w-full py-2 px-4 rounded-lg shadow-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
+                                
+                                <button type="submit" disabled id="updatePasswordButton" class="w-full py-2 px-4 rounded-lg shadow-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150 disabled:bg-indigo-300">
                                     Alterar Senha
                                 </button>
                             </form>
