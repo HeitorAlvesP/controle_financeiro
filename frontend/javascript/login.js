@@ -1,16 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // URL base da API (mantido '' pois userRoutes.js usa app.use('/users', ...))
+    // URL base da API
     const BASE_URL = ''; 
     
     const loginForm = document.getElementById('loginForm');
     const emailInput = document.getElementById('log-email');
     const passwordInput = document.getElementById('log-senha');
-    const messageElement = document.getElementById('loginMessage');
 
     // Checagem de segurança
     if (!loginForm || !emailInput || !passwordInput) {
         console.error("ERRO CRÍTICO NO DOM: Um ou mais elementos do formulário de login não foram encontrados.");
         return;
+    }
+    
+    // Se o usuário JÁ estiver logado (e a sessão válida), redireciona direto
+    if (sessionStorage.getItem('user')) {
+        window.location.href = '/html/dashboard.html';
+        return; 
     }
 
     loginForm.addEventListener('submit', async (e) => {
@@ -19,19 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = emailInput.value;
         const senha = passwordInput.value;
 
-        // Limpa a mensagem anterior
-        messageElement.textContent = '';
-        messageElement.className = '';
-
         try {
-            // Exibe o modal de carregamento (Opcional, mas melhora UX)
+            // Exibe o modal de carregamento
             Swal.fire({
                 title: 'Aguarde...',
                 text: 'Verificando credenciais.',
                 allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                didOpen: () => { Swal.showLoading(); }
             });
 
             const response = await fetch(`${BASE_URL}/users/login`, {
@@ -41,37 +40,35 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const textResponse = await response.text();
+            Swal.close(); 
             
             let json;
             try {
                 json = JSON.parse(textResponse);
             } catch (e) {
-                // Se a resposta não for JSON (ex: HTML de erro do Express), assume erro de servidor
                 Swal.fire({
                     icon: 'error',
                     title: 'Erro de Servidor',
-                    text: 'Resposta inválida do servidor. Verifique o console para detalhes.'
+                    text: 'Resposta inválida do servidor.'
                 });
                 console.error("Erro de Parsing JSON. Resposta do servidor:", textResponse);
                 return;
-            } finally {
-                Swal.close(); // Fecha o modal de carregamento
             }
 
-
             if (response.ok) {
+                // EXTREMAMENTE IMPORTANTE: Salvar o objeto user completo e garantir que ele tenha um 'id'.
+                // O objeto json.user já vem com todos os campos (id, nome, cpf, etc.)
+                sessionStorage.setItem('user', JSON.stringify(json.user));
+
                 // Login bem-sucedido
                 Swal.fire({
                     icon: 'success',
                     title: 'Login bem-sucedido!',
                     text: `Bem-vindo(a), ${json.user.nome}. Redirecionando...`,
                     showConfirmButton: false,
-                    timer: 2000
+                    timer: 1000
                 }).then(() => {
-                    // TODO: Redirecionar para a tela principal da aplicação
-                    // Por enquanto, apenas loga o sucesso
-                    console.log('Dados do Usuário:', json.user);
-                    // Exemplo de redirecionamento:
+                    // Redireciona para o dashboard
                     window.location.href = '/html/dashboard.html'; 
                 });
             } else {
@@ -81,12 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     title: 'Falha no Login',
                     text: json.message || 'Email e/ou Senha incorretos. Tente novamente.'
                 });
-                // Limpa a senha para segurança
                 passwordInput.value = '';
             }
 
         } catch (error) {
-            Swal.close(); // Fecha o modal de carregamento, se ainda estiver aberto
+            Swal.close();
             console.error('Erro na requisição (Rede ou Servidor):', error);
             Swal.fire({
                 icon: 'error',

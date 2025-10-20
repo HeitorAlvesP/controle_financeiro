@@ -1,10 +1,38 @@
 document.addEventListener('DOMContentLoaded', () => {
     const BASE_URL = ''; 
-    const loggedUser = JSON.parse(sessionStorage.getItem('user'));
     
+    // Função para checar a autenticação e obter o usuário
+    const checkAuthAndGetUser = () => {
+        const userJson = sessionStorage.getItem('user');
+        if (!userJson) {
+            return null;
+        }
+        try {
+            const user = JSON.parse(userJson);
+            // Checagem robusta: precisa do ID e do nome
+            if (user && user.id && user.nome) {
+                return user;
+            }
+            return null;
+        } catch (e) {
+            console.error("Erro ao fazer parse do JSON do usuário:", e);
+            return null;
+        }
+    };
+
+    const loggedUser = checkAuthAndGetUser();
+    
+    // --- Checagem de Autenticação CRÍTICA ---
+    if (!loggedUser) {
+        // Limpa a sessão (apenas por segurança) e redireciona
+        sessionStorage.removeItem('user');
+        window.location.href = '/html/login.html';
+        return;
+    }
+    
+    // Se a autenticação passar, continua o setup do dashboard
+
     // --- Elementos do DOM ---
-    
-    // Navegação
     const navLinks = document.querySelectorAll('#main-nav-links .menu-link-item');
     const contentDivs = document.querySelectorAll('.content-div');
     
@@ -26,30 +54,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailStep2 = document.getElementById('email-step-2');
     const newEmailInput = document.getElementById('newEmail');
     const pendingNewEmailSpan = document.getElementById('pendingNewEmail');
-    let pendingEmailData = null; // Armazena o novo email temporariamente
+    let pendingEmailData = null; 
 
-    // --- Checagem de Autenticação ---
-    if (!loggedUser || !loggedUser.id) {
-        window.location.href = '/html/login.html';
-        return;
-    }
-
-    // --- Funções de Navegação ---
+    // --- Funções de Navegação e Utility ---
 
     const switchContent = (targetId) => {
-        // Oculta todas as divs de conteúdo
         contentDivs.forEach(div => {
             div.classList.add('hidden');
         });
-        // Ativa a div de conteúdo alvo
         const targetDiv = document.getElementById(targetId);
         if (targetDiv) {
             targetDiv.classList.remove('hidden');
         }
 
-        // Atualiza a classe 'active' nos links de navegação
         navLinks.forEach(link => {
-            link.classList.remove('link-active', 'text-white', 'bg-indigo-600');
+            link.classList.remove('link-active', 'text-white', 'bg-indigo-600', 'text-gray-700');
             link.classList.add('text-gray-700');
 
             if (link.getAttribute('data-target') === targetId) {
@@ -59,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Adiciona event listener para a navegação
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             const targetId = link.getAttribute('data-target');
@@ -67,11 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-
-    // --- Funções de Utility (Com Swal) ---
-
     const postData = async (path, method, data) => {
-        // Inclui o userId no corpo da requisição
+        // Usa o ID do usuário da sessão
         const body = data ? JSON.stringify({ userId: loggedUser.id, ...data }) : JSON.stringify({ userId: loggedUser.id });
         
         try {
@@ -101,7 +116,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!response.ok) {
-                Swal.fire({ icon: 'error', title: 'Falha na Operação', text: json.message || 'Ocorreu um erro desconhecido.' });
+                // Se for erro de autenticação (401), pode ser token expirado/invalido
+                if (response.status === 401 || response.status === 404) {
+                     Swal.fire({ icon: 'error', title: 'Sessão Expirada', text: 'Por favor, faça login novamente.' });
+                     sessionStorage.removeItem('user');
+                     setTimeout(() => window.location.href = '/html/login.html', 1500);
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Falha na Operação', text: json.message || 'Ocorreu um erro desconhecido.' });
+                }
                 return null;
             }
 
@@ -115,7 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Função para atualizar a exibição dos dados na tela
     const renderUserProfile = (user) => {
         if (!user) return;
         
@@ -129,15 +150,16 @@ document.addEventListener('DOMContentLoaded', () => {
         displayCpf.textContent = formattedCpf;
         displayDtNascimento.textContent = formattedDtNasc;
         
-        // Preenche o campo de novo nome para conveniência
         document.getElementById('newName').value = user.nome || '';
     };
 
-    // --- Ações de Carregamento e Logout ---
+    // --- Inicialização ---
 
     // Carregar dados do perfil inicial
     renderUserProfile(loggedUser);
-
+    
+    // Event listeners... (os mesmos do bloco anterior)
+    
     // Logout
     logoutButton.addEventListener('click', () => {
         sessionStorage.removeItem('user');
@@ -157,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const newName = document.getElementById('newName').value;
         
-        // Rota: /users/management/name (backend a ser criado)
         const result = await postData('/users/management/name', 'PUT', { newName });
         
         if (result) {
@@ -182,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Rota: /users/management/password (backend a ser criado)
         const result = await postData('/users/management/password', 'PUT', { currentPassword, newPassword });
         
         if (result) {
@@ -196,14 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const newEmail = newEmailInput.value;
         
-        // Rota: /users/management/email/request-code (backend a ser criado)
         const result = await postData('/users/management/email/request-code', 'POST', { newEmail });
 
         if (result) {
             pendingEmailData = { newEmail: newEmail }; // Armazena o email pendente
             pendingNewEmailSpan.textContent = newEmail;
             
-            // Transiciona para o Passo 2
             emailStep1.classList.add('hidden');
             emailStep2.classList.remove('hidden');
             
@@ -221,7 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Rota: /users/management/email/verify-change (backend a ser criado)
         const result = await postData('/users/management/email/verify-change', 'PUT', { 
             newEmail: pendingEmailData.newEmail, 
             code 
@@ -230,12 +247,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result) {
             Swal.fire({ icon: 'success', title: 'E-mail Alterado!', text: result.message });
             
-            // Atualiza a sessão e a tela
             loggedUser.email = pendingEmailData.newEmail;
             sessionStorage.setItem('user', JSON.stringify(loggedUser));
             renderUserProfile(loggedUser);
 
-            // Volta para o Passo 1 e limpa
             emailStep2.classList.add('hidden');
             emailStep1.classList.remove('hidden');
             requestEmailChangeForm.reset();

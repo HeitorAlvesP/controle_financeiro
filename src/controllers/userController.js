@@ -161,11 +161,19 @@ export const loginUser = async (req, res) => {
 
     try {
         const db = await getDb();
-        // Incluindo CPF, tipo_user, status na seleção (para futuros usos)
-        const user = await db.get('SELECT id, nome, email, senha, cpf, tipo_user, status FROM users WHERE email = ?', [email]);
+        // ATUALIZAÇÃO: Selecionando TODOS os campos necessários para o Dashboard
+        const user = await db.get(
+            'SELECT id, nome, email, senha, cpf, dt_nascimento, tipo_user, status FROM users WHERE email = ?', 
+            [email]
+        );
 
         if (!user || user.senha !== senha) {
             return res.status(401).json({ message: 'Credenciais inválidas.' });
+        }
+        
+        // Se o usuário estiver inativo
+        if (user.status !== 1) {
+             return res.status(403).json({ message: 'Sua conta está inativa.' });
         }
 
         const now = new Date().toISOString();
@@ -177,7 +185,8 @@ export const loginUser = async (req, res) => {
                 id: user.id, 
                 nome: user.nome, 
                 email: user.email, 
-                cpf: user.cpf,
+                cpf: user.cpf, 
+                dt_nascimento: user.dt_nascimento,
                 tipo_user: user.tipo_user,
                 status: user.status,
                 ultimo_login: now 
