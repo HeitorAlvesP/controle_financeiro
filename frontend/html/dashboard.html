@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Controle Financeiro</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -30,6 +32,7 @@
 </head>
 <body class="min-h-screen flex">
 
+    <!-- Sidebar de Navegação -->
     <aside id="sidebar-nav" class="w-64 bg-white border-r border-gray-200 shadow-lg flex-shrink-0">
         <div class="p-4 flex items-center justify-between border-b">
             <h2 class="text-xl font-extrabold text-indigo-700">💸 Financeiro</h2>
@@ -38,22 +41,31 @@
         <nav class="p-4 space-y-2" id="main-nav-links">
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Módulos</h3>
             
+            <!-- Link 1: Controle Financeiro (View Padrão) -->
             <a id="nav-financeiro" data-target="content-financeiro-div" class="menu-link-item link-active text-white bg-indigo-600">
                 <span class="mr-3 text-lg">📊</span>
                 Controle Financeiro
             </a>
             
+            <!-- Link 2: Painel da Conta (Seu Perfil/Ajustes) -->
             <a id="nav-painel" data-target="content-painel-div" class="menu-link-item text-gray-700">
                 <span class="mr-3 text-lg">⚙️</span>
                 Painel da Conta
             </a>
             
+            <!-- Link 3: Cartões (NOVO) -->
+            <a id="nav-cards" data-target="content-cards-div" class="menu-link-item text-gray-700">
+                <span class="mr-3 text-lg">💳</span>
+                Cartões
+            </a>
         </nav>
     </aside>
 
+    <!-- Área de Conteúdo Principal -->
     <main class="flex-1 p-4 sm:p-8 overflow-y-auto">
         <div class="max-w-7xl mx-auto">
 
+            <!-- Cabeçalho (Exibindo o nome do usuário logado) -->
             <header class="flex justify-between items-center mb-8 border-b pb-4">
                 <h1 class="text-2xl font-semibold text-gray-800">
                     Bem-vindo(a), <span id="userNameDisplay" class="font-extrabold text-indigo-600">Carregando...</span>!
@@ -63,6 +75,7 @@
                 </button>
             </header>
 
+            <!-- CONTEÚDO 1: Controle Financeiro (Padrão) -->
             <div id="content-financeiro-div" class="content-div block">
                 <h2 class="text-3xl font-bold text-gray-700 mb-6">Visão Geral Financeira</h2>
                 <div class="p-6 bg-white rounded-xl shadow">
@@ -71,6 +84,7 @@
                 </div>
             </div>
 
+            <!-- CONTEÚDO 2: Painel da Conta (Perfil) -->
             <div id="content-painel-div" class="content-div hidden">
                 <h2 class="text-3xl font-bold text-gray-700 mb-8">Painel da Conta (Ajustes de Perfil)</h2>
 
@@ -93,6 +107,7 @@
                     
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         
+                        <!-- 1. Alterar Nome -->
                         <div class="lg:col-span-1 border-r lg:pr-6 pr-0 border-gray-100">
                             <h3 class="text-xl font-bold mb-4 text-indigo-700">Alterar Nome</h3>
                             <form id="updateNameForm" class="space-y-4">
@@ -106,6 +121,7 @@
                             </form>
                         </div>
 
+                        <!-- 2. Alterar Senha -->
                         <div class="lg:col-span-1 border-r lg:pr-6 pr-0 border-gray-100">
                             <h3 class="text-xl font-bold mb-4 text-indigo-700">Alterar Senha</h3>
                             <form id="updatePasswordForm" class="space-y-4">
@@ -114,7 +130,8 @@
                                     <input type="password" id="currentPassword" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                                 </div>
                                 
-                                <div id="new-password-fields">
+                                <!-- Campos da Nova Senha (DISABLED INICIALMENTE) -->
+                                <div id="new-password-fields" class="opacity-50">
                                     <div>
                                         <label for="newPassword" class="block text-sm font-medium text-gray-700">Nova Senha</label>
                                         <input type="password" id="newPassword" disabled required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:text-gray-500">
@@ -131,9 +148,11 @@
                             </form>
                         </div>
 
+                        <!-- 3. Alterar E-mail (Fluxo de 2 Passos) -->
                         <div class="lg:col-span-1">
                             <h3 class="text-xl font-bold mb-4 text-indigo-700">Alterar E-mail</h3>
                             
+                            <!-- Passo 1: Inserir Novo Email -->
                             <div id="email-step-1">
                                 <form id="requestEmailChangeForm" class="space-y-4">
                                     <div>
@@ -146,6 +165,7 @@
                                 </form>
                             </div>
 
+                            <!-- Passo 2: Inserir Código (Oculto inicialmente) -->
                             <div id="email-step-2" class="hidden">
                                 <p class="text-sm text-gray-600 mb-4">
                                     Digite o código enviado para <span id="pendingNewEmail" class="font-bold text-green-700"></span>.
@@ -170,6 +190,46 @@
 
                 </div>
             </div>
+            
+            <!-- CONTEÚDO 3: Cartões (NOVO) -->
+            <div id="content-cards-div" class="content-div hidden">
+                <h2 class="text-3xl font-bold text-gray-700 mb-6">Gestão de Cartões de Crédito</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Coluna de Cadastro de Cartão -->
+                    <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg border border-gray-100 h-fit">
+                        <h3 class="text-xl font-bold text-indigo-700 mb-4">Cadastrar Novo Cartão</h3>
+                        <form id="createCardForm" class="space-y-4">
+                            <div>
+                                <label for="card_nome_banco" class="block text-sm font-medium text-gray-700">Nome do Banco</label>
+                                <input type="text" id="card_nome_banco" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label for="card_nome_identificacao" class="block text-sm font-medium text-gray-700">Nome de Identificação</label>
+                                <input type="text" id="card_nome_identificacao" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label for="card_limite_total" class="block text-sm font-medium text-gray-700">Limite Total</label>
+                                <input type="number" id="card_limite_total" required min="0" step="0.01" value="0.00"
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg text-right">
+                            </div>
+                            <button type="submit" class="w-full py-2 px-4 rounded-lg shadow-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition">
+                                Cadastrar Cartão
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Coluna de Listagem de Cartões -->
+                    <div class="lg:col-span-2">
+                        <h3 class="text-xl font-bold text-gray-700 mb-4">Seus Cartões Cadastrados</h3>
+                        <div id="cardsList" class="space-y-4">
+                            <!-- Cartões serão injetados aqui -->
+                            <p class="text-gray-500 text-center p-8 bg-white rounded-xl shadow-sm">Nenhum cartão cadastrado ainda.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
     </main>
     

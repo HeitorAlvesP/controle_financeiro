@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const BASE_URL = ''; 
     
+    // --- FUNÇÕES DE UTILITY DE ESCOPO ALTO ---
+
     const checkAuthAndGetUser = () => {
         const userJson = sessionStorage.getItem('user');
         if (!userJson) { return null; }
@@ -13,23 +15,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     };
-
-    const loggedUser = checkAuthAndGetUser();
     
+    const loggedUser = checkAuthAndGetUser();
+
+    // ----------------------------------------------------------------------
+    // --- CHECAGEM CRÍTICA DE AUTENTICAÇÃO (MANTIDA NO TOPO) ---
+    // ----------------------------------------------------------------------
     if (!loggedUser) {
         sessionStorage.removeItem('user');
         window.location.href = '/html/login.html';
         return;
     }
     
-    // --- Elementos de Senha ---
-    const currentPasswordInput = document.getElementById('currentPassword');
-    const newPasswordInput = document.getElementById('newPassword');
-    const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
-    const updatePasswordButton = document.getElementById('updatePasswordButton');
-    const newPasswordFieldset = document.getElementById('new-password-fields');
-
-    // --- Elementos do Dashboard ---
+    // --- ELEMENTOS DO DASHBOARD (DEPOIS DA CHECAGEM DE AUTH) ---
     const navLinks = document.querySelectorAll('#main-nav-links .menu-link-item');
     const contentDivs = document.querySelectorAll('.content-div');
     const userNameDisplay = document.getElementById('userNameDisplay');
@@ -47,26 +45,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const pendingNewEmailSpan = document.getElementById('pendingNewEmail');
     let pendingEmailData = null; 
 
-    // --- SETUP INICIAL DE SEGURANÇA ---
-    if (newPasswordInput) newPasswordInput.disabled = true;
-    if (confirmNewPasswordInput) confirmNewPasswordInput.disabled = true;
-    if (updatePasswordButton) updatePasswordButton.disabled = true;
-
-    // --- NOVO: Função de Validação de Senha ---
-    const validateNewPasswordRules = (password) => {
-        const errors = [];
-        if (password.length < 6) errors.push('<li>A senha deve ter pelo menos 6 caracteres.</li>');
-        if (!/[A-Z]/.test(password)) errors.push('<li>A senha deve conter pelo menos 1 letra maiúscula.</li>');
-        if (!/[a-z]/.test(password)) errors.push('<li>A senha deve conter pelo menos 1 letra minúscula.</li>');
-        if (!/[0-9]/.test(password)) errors.push('<li>A senha deve conter pelo menos 1 número.</li>');
-        return errors;
-    };
+    // Elementos de Cartões
+    const createCardForm = document.getElementById('createCardForm');
+    const cardsListDiv = document.getElementById('cardsList');
     
-    // --- Funções de Navegação e PostData (Mantidas) ---
+    // Elementos de Senha
+    const currentPasswordInput = document.getElementById('currentPassword');
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+    const updatePasswordButton = document.getElementById('updatePasswordButton');
+    const newPasswordFieldset = document.getElementById('new-password-fields');
+
+    // --- FUNÇÃO SWITCH CONTENT (MOVIMENTO PARA O TOPO) ---
     const switchContent = (targetId) => {
         contentDivs.forEach(div => { div.classList.add('hidden'); });
         const targetDiv = document.getElementById(targetId);
-        if (targetDiv) { targetDiv.classList.remove('hidden'); }
+        if (targetDiv) { 
+            targetDiv.classList.remove('hidden'); 
+            if (targetId === 'content-cards-div') {
+                loadCards(); // Chamada para carregar cartões ao trocar de tela
+            }
+        }
 
         navLinks.forEach(link => {
             link.classList.remove('link-active', 'text-white', 'bg-indigo-600', 'text-gray-700');
@@ -78,19 +77,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // Adiciona listener para a navegação
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             const targetId = link.getAttribute('data-target');
             switchContent(targetId);
         });
     });
+    
+    // --- Funções de Validação e Requisição (MANTIDAS) ---
 
+    const validateNewPasswordRules = (password) => {
+        const errors = [];
+        if (password.length < 6) errors.push('<li>A senha deve ter pelo menos 6 caracteres.</li>');
+        if (!/[A-Z]/.test(password)) errors.push('<li>A senha deve conter pelo menos 1 letra maiúscula.</li>');
+        if (!/[a-z]/.test(password)) errors.push('<li>A senha deve conter pelo menos 1 letra minúscula.</li>');
+        if (!/[0-9]/.test(password)) errors.push('<li>A senha deve conter pelo menos 1 número.</li>');
+        return errors;
+    };
+    
     const postData = async (path, method, data) => {
-        const body = data ? JSON.stringify({ userId: loggedUser.id, ...data }) : JSON.stringify({ userId: loggedUser.id });
+        const isGetRequest = method === 'GET';
+        
+        let url = `${BASE_URL}${path}`;
+        let body = null;
+        
+        if (isGetRequest) {
+            url = `${url}?userId=${loggedUser.id}`;
+        } else {
+            body = data ? JSON.stringify({ userId: loggedUser.id, ...data }) : JSON.stringify({ userId: loggedUser.id });
+        }
         
         try {
             const isValidation = path.includes('/password/validate');
-            if (!isValidation) {
+            if (!isValidation && !isGetRequest) { 
                 Swal.fire({
                     title: 'Processando...',
                     text: 'Aguarde um momento.',
@@ -99,26 +119,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            const response = await fetch(`${BASE_URL}${path}`, {
+            const response = await fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: body
+                body: body 
             });
 
             const textResponse = await response.text();
-            if (!isValidation) Swal.close(); 
+            if (!isValidation && !isGetRequest) Swal.close(); 
             
             let json;
             try {
                 json = JSON.parse(textResponse);
             } catch (e) {
                 console.error("Erro de Parsing JSON. Resposta do servidor:", textResponse);
-                if (!isValidation) Swal.fire({ icon: 'error', title: 'Erro de Servidor', text: 'Resposta inválida.' });
+                if (!isValidation && !isGetRequest) Swal.fire({ icon: 'error', title: 'Erro de Servidor', text: 'Resposta inválida.' });
                 return null;
             }
 
             if (!response.ok) {
-                if (response.status !== 401) { 
+                if (response.status !== 401 && response.status !== 404) { 
                     Swal.fire({ icon: 'error', title: 'Falha na Operação', text: json.message || 'Ocorreu um erro desconhecido.' });
                 }
                 return null;
@@ -133,8 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     };
-
-
+    
     const renderUserProfile = (user) => {
         if (!user) return;
         
@@ -149,10 +168,63 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('newName').value = user.nome || '';
     };
 
-    renderUserProfile(loggedUser);
-    
-    // --- LÓGICA DE VALIDAÇÃO DE SENHA ATUAL (NOVA IMPLEMENTAÇÃO) ---
+    // --- FUNÇÕES DE CARTÕES (MANTIDAS) ---
 
+    const renderCardsList = (cards) => {
+        cardsListDiv.innerHTML = '';
+        if (!cards || cards.length === 0) {
+            cardsListDiv.innerHTML = '<p class="text-gray-500 text-center p-8 bg-white rounded-xl shadow-sm">Nenhum cartão cadastrado ainda.</p>';
+            return;
+        }
+
+        cards.forEach(card => {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'p-4 bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition duration-150';
+            cardElement.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="text-xl font-bold text-indigo-700">${card.nome_identificacao}</h4>
+                        <p class="text-sm text-gray-500">${card.nome_banco}</p>
+                    </div>
+                    <span class="text-2xl text-indigo-500">💳</span>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-2">
+                    <div>
+                        <p class="text-sm text-gray-500">Limite Total</p>
+                        <p class="text-base font-semibold text-gray-800">R$ ${card.limite_total.toFixed(2)}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Fatura Atual</p>
+                        <p class="text-base font-semibold text-red-500">R$ ${card.valor_fatura.toFixed(2)}</p>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-gray-100 flex justify-end space-x-2">
+                    <button data-id="${card.id}" class="edit-card-btn py-1 px-3 text-sm rounded text-indigo-600 hover:bg-indigo-50 transition">
+                        Editar
+                    </button>
+                    <button data-id="${card.id}" class="delete-card-btn py-1 px-3 text-sm rounded text-red-600 hover:bg-red-50 transition">
+                        Excluir
+                    </button>
+                </div>
+            `;
+            cardsListDiv.appendChild(cardElement);
+        });
+    };
+
+    const loadCards = async () => {
+        cardsListDiv.innerHTML = '<p class="text-center p-8 text-blue-500">Carregando cartões...</p>';
+        // Rota /cards com método GET e userId no query
+        const result = await postData('/cards', 'GET', null); 
+        
+        if (result) {
+            renderCardsList(result);
+        } else {
+            cardsListDiv.innerHTML = '<p class="text-center p-8 text-red-500">Falha ao carregar cartões.</p>';
+        }
+    };
+    
+    // --- FUNÇÕES DE GESTÃO DE PERFIL E EVENTOS (MANTIDAS) ---
+    
     const toggleNewPasswordFields = (enable) => {
         newPasswordInput.disabled = !enable;
         confirmNewPasswordInput.disabled = !enable;
@@ -189,43 +261,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
-    // --- 2. Alterar Senha (APLICANDO REGRAS) ---
     updatePasswordForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const currentPassword = currentPasswordInput.value;
         const newPassword = newPasswordInput.value;
         const confirmNewPassword = confirmNewPasswordInput.value;
 
-        // 1. Validação de Regras de Segurança
         const validationErrors = validateNewPasswordRules(newPassword);
 
         if (validationErrors.length > 0) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Nova Senha Inválida',
-                html: `
-                    <p class="font-bold text-lg mb-2 text-red-600">A nova senha deve atender aos seguintes critérios:</p>
-                    <ul class="list-disc list-inside text-sm text-gray-700 text-left mx-auto max-w-xs">
-                        ${validationErrors.join('')}
-                    </ul>
-                `
+                html: `<ul class="list-disc list-inside text-sm text-gray-700 text-left mx-auto max-w-xs">${validationErrors.join('')}</ul>`
             });
             return;
         }
 
-        // 2. Validação de Confirmação
         if (newPassword !== confirmNewPassword) {
             Swal.fire({ icon: 'warning', title: 'Senhas Diferentes', text: 'A nova senha e a confirmação de senha não coincidem.' });
             return;
         }
         
-        // 3. Verifica se a senha nova é igual à atual
         if (newPassword === currentPassword) {
              Swal.fire({ icon: 'warning', title: 'Senhas Iguais', text: 'A nova senha não pode ser igual à senha atual.' });
             return;
         }
-
 
         const result = await postData('/users/management/password', 'PUT', { currentPassword, newPassword });
         
@@ -238,9 +299,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Outras Funções (MANTIDAS) ---
-    // ... (Restante do código: updateNameForm, requestEmailChangeForm, verifyEmailChangeForm, logoutButton)
-    
     updateNameForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const newName = document.getElementById('newName').value;
@@ -311,5 +369,4 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = '/html/login.html';
         });
     });
-
 });
