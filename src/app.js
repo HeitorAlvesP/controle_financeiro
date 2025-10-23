@@ -1,7 +1,8 @@
 import express from 'express';
 import { initializeDatabase } from './database/db.js';
 import userRoutes from './routes/userRoutes.js';
-import managementRoutes from './routes/managementRoutes.js'; // Importa as novas rotas de gerenciamento
+import managementRoutes from './routes/managementRoutes.js'; 
+import cardRoutes from './routes/cardRoutes.js'; // Importa as novas rotas de cartões
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -23,7 +24,10 @@ app.use('/users', userRoutes);
 // Rota principal para todas as ações do painel da conta (PUT /users/management/name, etc.)
 app.use('/users/management', managementRoutes);
 
-// --- 3. ARQUIVOS ESTÁTICOS DO FRONTEND ---
+// --- 3. NOVAS ROTAS DE CARTÕES ---
+app.use('/cards', cardRoutes); // Endpoint principal para Cartões
+
+// --- 4. ARQUIVOS ESTÁTICOS DO FRONTEND ---
 app.use(express.static(path.join(rootDir, 'frontend')));
 
 // Rota padrão para servir o login.html
