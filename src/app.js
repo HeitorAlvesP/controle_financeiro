@@ -27,15 +27,13 @@ app.use('/users/management', managementRoutes);
 // --- 3. NOVAS ROTAS DE CARTÕES ---
 app.use('/cards', cardRoutes); // Endpoint principal para Cartões
 
-// --- 4. ARQUIVOS ESTÁTICOS DO FRONTEND ---
-app.use(express.static(path.join(rootDir, 'frontend')));
 
-// Rota padrão para servir o login.html
+app.use(express.static(path.join(rootDir, 'frontend')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(rootDir, 'frontend/html/login.html'));
 });
 
-// Inicialização do Banco de Dados e do Servidor
+
 (async () => {
     try {
         await initializeDatabase();
