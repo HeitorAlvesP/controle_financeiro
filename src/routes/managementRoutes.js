@@ -24,4 +24,8 @@ router.put('/password', updatePassword);
 router.post('/email/request-code', requestEmailChangeCode); 
 router.put('/email/verify-change', verifyEmailChange);     
 
+router.get('/profile', (req, res) => {
+    return res.status(200).json(req.user);
+});
+
 export default router;

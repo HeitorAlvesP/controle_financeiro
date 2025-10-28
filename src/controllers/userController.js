@@ -3,17 +3,10 @@ import { sendVerificationCode } from '../services/emailService.js';
 
 // Estrutura para manter os cadastros pendentes na memória
 const pendingRegistrations = {};
-const EXPIRATION_TIME_MS = 15 * 60 * 1000; // 15 minutos
-
-// Função auxiliar para gerar um código de 6 dígitos
+const EXPIRATION_TIME_MS = 15 * 60 * 1000; 
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-/**
- * Valida o formato básico do CPF (11 dígitos numéricos).
- * NOTE: Esta é apenas uma validação de formato e não de dígito verificador.
- * @param {string} cpf - O CPF a ser validado.
- * @returns {boolean}
- */
+
 const validateCPF = (cpf) => {
     if (!cpf) return false;
     // Remove caracteres não numéricos e verifica se tem 11 dígitos
@@ -161,7 +154,7 @@ export const loginUser = async (req, res) => {
 
     try {
         const db = await getDb();
-        // ATUALIZAÇÃO: Selecionando TODOS os campos necessários para o Dashboard
+        // GARANTINDO que todos os campos sejam selecionados
         const user = await db.get(
             'SELECT id, nome, email, senha, cpf, dt_nascimento, tipo_user, status FROM users WHERE email = ?', 
             [email]
@@ -171,7 +164,6 @@ export const loginUser = async (req, res) => {
             return res.status(401).json({ message: 'Credenciais inválidas.' });
         }
         
-        // Se o usuário estiver inativo
         if (user.status !== 1) {
              return res.status(403).json({ message: 'Sua conta está inativa.' });
         }
@@ -181,6 +173,7 @@ export const loginUser = async (req, res) => {
 
         return res.status(200).json({
             message: 'Login realizado com sucesso!',
+            // Retorna o objeto user COMPLETO para o frontend salvar
             user: { 
                 id: user.id, 
                 nome: user.nome, 

@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const BASE_URL = ''; 
     
-    // --- FUNÇÕES DE UTILITY DE ESCOPO ALTO ---
-
+    // ... (restante das variáveis de escopo alto)
+    
+    // Funções de Checagem e Inicialização (MANTIDAS)
     const checkAuthAndGetUser = () => {
         const userJson = sessionStorage.getItem('user');
         if (!userJson) { return null; }
@@ -15,17 +16,36 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     };
-    
-    const loggedUser = checkAuthAndGetUser();
 
-    // ----------------------------------------------------------------------
-    // --- CHECAGEM CRÍTICA DE AUTENTICAÇÃO (MANTIDA NO TOPO) ---
-    // ----------------------------------------------------------------------
+    let loggedUser = checkAuthAndGetUser(); // Deve ser 'let' para ser atualizado
+    
+    // --- Checagem de Autenticação CRÍTICA (MANTIDA) ---
     if (!loggedUser) {
         sessionStorage.removeItem('user');
         window.location.href = '/html/login.html';
         return;
     }
+    
+    // --- FUNÇÃO CORRIGIDA DE BUSCA DO PERFIL ---
+    const fetchAndRenderProfile = async () => {
+        // Tenta fazer o GET para /users/management/profile?userId=X
+        const result = await postData('/users/management/profile', 'GET', null); 
+        
+        if (result) {
+            // Atualiza a variável local de sessão e o sessionStorage com os dados FILTRADOS e ATUALIZADOS
+            loggedUser = { ...loggedUser, ...result }; // Atualiza dados (nome, email, cpf, etc.)
+            sessionStorage.setItem('user', JSON.stringify(loggedUser)); 
+            renderUserProfile(loggedUser); 
+        } else {
+            // Se falhar (ex: usuário deletado ou sessão inválida no backend), faz logout
+            Swal.fire({ icon: 'error', title: 'Sessão Expirada', text: 'Falha ao carregar dados do perfil. Faça login novamente.' });
+            sessionStorage.removeItem('user');
+            setTimeout(() => window.location.href = '/html/login.html', 1500);
+        }
+    };
+
+    // --- Chamada inicial dos dados APÓS a inicialização de todas as variáveis ---
+    fetchAndRenderProfile();
     
     // --- ELEMENTOS DO DASHBOARD (DEPOIS DA CHECAGEM DE AUTH) ---
     const navLinks = document.querySelectorAll('#main-nav-links .menu-link-item');
