@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
-const REMETENTE_EMAIL = 'heitorpinto.oficial@gmail.com'; 
-const SENHA_APLICATIVO = 'bnlvruvxhserutrt'; 
+const REMETENTE_EMAIL = ''; 
+const SENHA_APLICATIVO = ''; 
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
